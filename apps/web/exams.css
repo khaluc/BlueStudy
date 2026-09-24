@@ -1,0 +1,142 @@
+.exam-page {
+  max-width: 1080px;
+  margin: auto;
+}
+.exam-page h1 {
+  font-size: 30px;
+  overflow-wrap: anywhere;
+}
+.exam-key-warning {
+  padding: 15px 18px;
+  border: 1px solid #d8cba8;
+  background: #faf3de;
+  color: #75603c;
+  border-radius: 7px;
+  font-size: 12px;
+  line-height: 1.8;
+  margin: 15px 0;
+}
+.exam-stages {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin: 20px 0;
+}
+.exam-stages > div {
+  background: #eaf0e3;
+  border: 1px solid #d3decc;
+  border-radius: 6px;
+  padding: 15px;
+  font-size: 12px;
+  line-height: 1.7;
+}
+.exam-section {
+  margin: 25px 0;
+  padding: 20px;
+  background: #fffef8;
+  border: 1px solid #dcded2;
+  border-radius: 8px;
+}
+.exam-passage {
+  background: #f3f5ec;
+  padding: 18px;
+  border-radius: 6px;
+}
+.exam-passage summary {
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+}
+.exam-passage p {
+  white-space: pre-wrap;
+  font-size: 14px;
+  line-height: 1.9;
+  color: #344e42;
+}
+.exam-skill {
+  display: block;
+  color: #6d8463;
+  margin-bottom: 10px;
+}
+.exam-submit-bar {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  gap: 15px;
+  justify-content: space-between;
+  align-items: center;
+  background: #fcfff7;
+  border: 1px solid #ced9c5;
+  padding: 15px;
+  box-shadow: 0 -4px 20px #304a3310;
+  border-radius: 8px;
+}
+.exam-results table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 18px 0;
+  font-size: 13px;
+}
+.exam-results td,
+.exam-results th {
+  padding: 10px;
+  text-align: left;
+  border-bottom: 1px solid #dde4d5;
+}
+.exam-results li {
+  line-height: 1.9;
+  margin: 8px 0;
+}
+.exam-page blockquote {
+  font-size: 12px;
+  line-height: 1.7;
+  color: #68745f;
+  border-left: 3px solid #ccd5bd;
+  margin: 12px 0;
+  padding-left: 14px;
+}
+.exam-form fieldset {
+  scroll-margin-top: 20px;
+}
+.exam-form .inline-quiz-option {
+  font-size: 14px;
+}
+.exam-form .inline-quiz-question legend {
+  font-size: 14px;
+  white-space: pre-wrap;
+}
+@media (max-width: 700px) {
+  .exam-stages {
+    grid-template-columns: 1fr;
+  }
+  .exam-page h1 {
+    font-size: 24px;
+  }
+  .exam-section {
+    padding: 12px;
+  }
+  .exam-passage {
+    padding: 12px;
+  }
+  .exam-passage p {
+    font-size: 13px;
+  }
+  .exam-submit-bar {
+    font-size: 11px;
+    gap: 8px;
+  }
+  .exam-submit-bar button {
+    font-size: 11px;
+    padding: 10px;
+  }
+  .exam-results table {
+    font-size: 11px;
+  }
+  .exam-results td,
+  .exam-results th {
+    padding: 7px;
+  }
+  .exam-form .inline-quiz-option {
+    font-size: 12px;
+  }
+}

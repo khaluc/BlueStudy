@@ -1,0 +1,163 @@
+{
+  "version": 1,
+  "book": "English 9 Global Success",
+  "scope": "Topic titles only; keyword mapping is a suggestion, not official learning outcomes",
+  "topics": [
+    {
+      "id": "gs9-u1",
+      "unit": 1,
+      "title": "Cộng đồng địa phương",
+      "book": "Tiếng Anh 9 Global Success",
+      "source_url": "https://heid.vn/chinh-phuc-tu-vung-tieng-anh-lop-9-theo-chu-de-da-dang/",
+      "source_status": "topic_titles_checked",
+      "keywords": [
+        "community",
+        "local community",
+        "volunteer"
+      ]
+    },
+    {
+      "id": "gs9-u2",
+      "unit": 2,
+      "title": "Cuộc sống thành thị",
+      "book": "Tiếng Anh 9 Global Success",
+      "source_url": "https://heid.vn/chinh-phuc-tu-vung-tieng-anh-lop-9-theo-chu-de-da-dang/",
+      "source_status": "topic_titles_checked",
+      "keywords": [
+        "city",
+        "urban",
+        "traffic"
+      ]
+    },
+    {
+      "id": "gs9-u3",
+      "unit": 3,
+      "title": "Sống khỏe ở tuổi thiếu niên",
+      "book": "Tiếng Anh 9 Global Success",
+      "source_url": "https://heid.vn/chinh-phuc-tu-vung-tieng-anh-lop-9-theo-chu-de-da-dang/",
+      "source_status": "topic_titles_checked",
+      "keywords": [
+        "healthy",
+        "exercise",
+        "sleep"
+      ]
+    },
+    {
+      "id": "gs9-u4",
+      "unit": 4,
+      "title": "Nhớ về quá khứ",
+      "book": "Tiếng Anh 9 Global Success",
+      "source_url": "https://heid.vn/chinh-phuc-tu-vung-tieng-anh-lop-9-theo-chu-de-da-dang/",
+      "source_status": "topic_titles_checked",
+      "keywords": [
+        "heritage",
+        "monument",
+        "ancient"
+      ]
+    },
+    {
+      "id": "gs9-u5",
+      "unit": 5,
+      "title": "Những trải nghiệm của chúng ta",
+      "book": "Tiếng Anh 9 Global Success",
+      "source_url": "https://heid.vn/chinh-phuc-tu-vung-tieng-anh-lop-9-theo-chu-de-da-dang/",
+      "source_status": "topic_titles_checked",
+      "keywords": [
+        "experience",
+        "adventure",
+        "memorable"
+      ]
+    },
+    {
+      "id": "gs9-u6",
+      "unit": 6,
+      "title": "Lối sống Việt Nam xưa và nay",
+      "book": "Tiếng Anh 9 Global Success",
+      "source_url": "https://heid.vn/chinh-phuc-tu-vung-tieng-anh-lop-9-theo-chu-de-da-dang/",
+      "source_status": "topic_titles_checked",
+      "keywords": [
+        "lifestyle",
+        "tradition",
+        "then and now"
+      ]
+    },
+    {
+      "id": "gs9-u7",
+      "unit": 7,
+      "title": "Kỳ quan thiên nhiên thế giới",
+      "book": "Tiếng Anh 9 Global Success",
+      "source_url": "https://heid.vn/chinh-phuc-tu-vung-tieng-anh-lop-9-theo-chu-de-da-dang/",
+      "source_status": "topic_titles_checked",
+      "keywords": [
+        "wonder",
+        "cave",
+        "waterfall"
+      ]
+    },
+    {
+      "id": "gs9-u8",
+      "unit": 8,
+      "title": "Du lịch",
+      "book": "Tiếng Anh 9 Global Success",
+      "source_url": "https://heid.vn/chinh-phuc-tu-vung-tieng-anh-lop-9-theo-chu-de-da-dang/",
+      "source_status": "topic_titles_checked",
+      "keywords": [
+        "tourism",
+        "tourist",
+        "hotel"
+      ]
+    },
+    {
+      "id": "gs9-u9",
+      "unit": 9,
+      "title": "Tiếng Anh trên thế giới",
+      "book": "Tiếng Anh 9 Global Success",
+      "source_url": "https://heid.vn/chinh-phuc-tu-vung-tieng-anh-lop-9-theo-chu-de-da-dang/",
+      "source_status": "topic_titles_checked",
+      "keywords": [
+        "accent",
+        "englishes",
+        "native speaker"
+      ]
+    },
+    {
+      "id": "gs9-u10",
+      "unit": 10,
+      "title": "Hành tinh Trái Đất",
+      "book": "Tiếng Anh 9 Global Success",
+      "source_url": "https://heid.vn/chinh-phuc-tu-vung-tieng-anh-lop-9-theo-chu-de-da-dang/",
+      "source_status": "topic_titles_checked",
+      "keywords": [
+        "planet",
+        "earth",
+        "ecosystem"
+      ]
+    },
+    {
+      "id": "gs9-u11",
+      "unit": 11,
+      "title": "Thiết bị điện tử",
+      "book": "Tiếng Anh 9 Global Success",
+      "source_url": "https://heid.vn/chinh-phuc-tu-vung-tieng-anh-lop-9-theo-chu-de-da-dang/",
+      "source_status": "topic_titles_checked",
+      "keywords": [
+        "device",
+        "smartphone",
+        "electronic"
+      ]
+    },
+    {
+      "id": "gs9-u12",
+      "unit": 12,
+      "title": "Lựa chọn nghề nghiệp",
+      "book": "Tiếng Anh 9 Global Success",
+      "source_url": "https://heid.vn/chinh-phuc-tu-vung-tieng-anh-lop-9-theo-chu-de-da-dang/",
+      "source_status": "topic_titles_checked",
+      "keywords": [
+        "career",
+        "occupation",
+        "profession"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,98 @@
+services:
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: padayon
+      POSTGRES_USER: padayon
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U padayon -d padayon"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+  migrate:
+    build:
+      context: .
+      dockerfile: infra/docker/api.Dockerfile
+    environment:
+      DATABASE_URL: postgresql+psycopg://padayon:${POSTGRES_PASSWORD}@postgres:5432/padayon
+    command: ["python", "-m", "alembic", "upgrade", "head"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+  api:
+    build:
+      context: .
+      dockerfile: infra/docker/api.Dockerfile
+    environment:
+      DATABASE_URL: postgresql+psycopg://padayon:${POSTGRES_PASSWORD}@postgres:5432/padayon
+      STORAGE_ROOT: /app/data/uploads
+      LOCAL_ACCESS_FILE: /app/local-access.json
+    volumes:
+      - source_data:/app/data/uploads
+      - ./data/local-demo.json:/app/local-access.json:ro
+    ports:
+      - "127.0.0.1:8000:8000"
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health/ready')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  worker:
+    build:
+      context: .
+      dockerfile: infra/docker/worker.Dockerfile
+    environment:
+      DATABASE_URL: postgresql+psycopg://padayon:${POSTGRES_PASSWORD}@postgres:5432/padayon
+      CHAT_BASE_URL: http://chat:8001
+      STORAGE_ROOT: /app/data/uploads
+      VISION_PROVIDER: ${VISION_PROVIDER:-ollama}
+      OLLAMA_BASE_URL: http://host.docker.internal:11434
+      OLLAMA_VISION_MODEL: ${OLLAMA_VISION_MODEL:-qwen3-vl:2b-instruct-q8_0}
+      VISION_TIMEOUT_SECONDS: ${VISION_TIMEOUT_SECONDS:-45}
+      LOCAL_FALLBACK_ENABLED: ${LOCAL_FALLBACK_ENABLED:-true}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - source_data:/app/data/uploads:ro
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      chat:
+        condition: service_healthy
+    stop_grace_period: 300s
+  chat:
+    build:
+      context: .
+      dockerfile: infra/docker/chat.Dockerfile
+    ports:
+      - "127.0.0.1:8001:8001"
+    environment:
+      OLLAMA_BASE_URL: http://host.docker.internal:11434
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-gemma4:e2b}
+      LLM_TIMEOUT_SECONDS: ${LLM_TIMEOUT_SECONDS:-120}
+      LLM_NUM_CTX: ${LLM_NUM_CTX:-4096}
+      LLM_NUM_PREDICT: ${LLM_NUM_PREDICT:-512}
+      CHAT_PROVIDER: ${CHAT_PROVIDER:-qwen_cloud}
+      DASHSCOPE_API_KEY: ${DASHSCOPE_API_KEY:-}
+      QWEN_BASE_URL: ${QWEN_BASE_URL:-https://maas.qwencloudapi.com/compatible-mode/v1}
+      QWEN_CHAT_MODEL: ${QWEN_CHAT_MODEL:-qwen3.8-max-0902}
+      QWEN_ENABLE_THINKING: ${QWEN_ENABLE_THINKING:-true}
+      QWEN_MAX_TOKENS: ${QWEN_MAX_TOKENS:-4096}
+      CLOUD_TIMEOUT_SECONDS: ${CLOUD_TIMEOUT_SECONDS:-45}
+      LOCAL_FALLBACK_ENABLED: ${LOCAL_FALLBACK_ENABLED:-true}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8001/health/live')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+volumes:
+  postgres_data:
+  source_data:

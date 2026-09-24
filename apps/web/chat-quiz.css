@@ -1,0 +1,126 @@
+.chat-bubble.with-quiz {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+.inline-quiz {
+  border-top: 1px solid #e1e5d9;
+  margin-top: 18px;
+  padding-top: 18px;
+}
+.inline-quiz h3 {
+  font-size: 19px;
+  line-height: 1.45;
+  margin: 8px 0;
+}
+.quiz-selection-count,
+.quiz-saved {
+  color: #54745e;
+  font-size: 12px;
+}
+.inline-quiz-question {
+  min-width: 0;
+  margin: 18px 0;
+  padding: 14px;
+  border: 1px solid #dce3da;
+  border-radius: 9px;
+  background: #fcfdfa;
+}
+.inline-quiz-question legend {
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.7;
+  padding: 0 5px;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+.inline-quiz-option {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin: 7px 0;
+  padding: 11px 12px;
+  border: 1px solid #e0e5df;
+  border-radius: 6px;
+  background: #f3f6f3;
+  font-size: 12px;
+  cursor: pointer;
+  line-height: 1.6;
+}
+.inline-quiz-option:hover {
+  background: #eaf0e7;
+  border-color: #a3b5a1;
+}
+.inline-quiz-option:has(input:checked) {
+  border-color: #496fb3;
+  background: #eaf0fc;
+}
+.inline-quiz-option:focus-within {
+  outline: 2px solid #4065a0;
+  outline-offset: 2px;
+}
+.inline-quiz-option input {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+  margin: 0;
+  accent-color: #3d6ab3;
+}
+.option-letter {
+  font-weight: 600;
+  color: #63766a;
+}
+.inline-quiz-option.correct {
+  background: #e8f2e5;
+  border-color: #83a67c;
+}
+.inline-quiz-option.incorrect {
+  background: #faeae5;
+  border-color: #c39280;
+}
+.quiz-verdict {
+  margin-left: auto;
+  font-size: 10px;
+  white-space: nowrap;
+}
+.quiz-explanation {
+  font-size: 12px;
+  line-height: 1.8;
+  color: #53644f;
+  margin-bottom: 0;
+}
+.quiz-shortcut {
+  font-size: 10px;
+  margin: 0 0 8px;
+  padding: 7px 12px;
+  border-radius: 6px;
+}
+.agent-progress {
+  width: 100%;
+  height: 6px;
+  accent-color: #96caa0;
+  margin: 8px 0 15px;
+}
+.agent-heading {
+  font-size: 12px;
+  font-weight: 500;
+  color: #e0ecdd;
+}
+.chat-monitor {
+  overflow-y: auto;
+}
+@media (max-width: 700px) {
+  .inline-quiz-question {
+    padding: 10px;
+  }
+  .inline-quiz-option {
+    padding: 10px 8px;
+    gap: 7px;
+  }
+  .quiz-verdict {
+    white-space: normal;
+  }
+  .inline-quiz h3 {
+    font-size: 17px;
+  }
+}

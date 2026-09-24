@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="theme-color" content="#f3f1e7" />
+    <title>BlueStudy · Cuốn vở tri thức của bạn</title>
+    <link rel="stylesheet" href="/app/fonts/fonts.css" />
+    <link rel="stylesheet" href="/app/notebook.css" />
+    <link rel="stylesheet" href="/app/chat.css" />
+    <link rel="stylesheet" href="/app/chat-quiz.css" />
+    <link rel="stylesheet" href="/app/exams.css" />
+    <script src="/app/i18n.js" defer></script>
+    <script src="/app/app.js" defer></script>
+    <script src="/app/notebook.js" defer></script>
+    <script src="/app/chat-quiz.js" defer></script>
+    <script src="/app/exams.js" defer></script>
+    <script src="/app/chat.js" defer></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#content">Bỏ qua điều hướng</a>
+    <aside class="sidebar">
+      <a class="brand" href="/app/" aria-label="BlueStudy — trang chủ"
+        ><span class="pencil" aria-hidden="true">✎</span>BlueStudy<span
+          class="brand-dot"
+          >.</span
+        ></a
+      >
+      <p class="tag">MỘT CUỐN VỞ. VẠN ĐIỀU HAY.</p>
+      <p class="nav-caption">MỤC LỤC</p>
+      <nav aria-label="Điều hướng chính">
+        <button data-view="chat"><span class="nav-number">✦</span>Chat AI<span class="active-dot">•</span></button>
+        <button data-view="map">
+          <span class="nav-number">01</span>Sơ đồ bài học<span
+            class="active-dot"
+            >•</span
+          >
+        </button>
+        <button data-view="exams"><span class="nav-number">✎</span>Đề thi & ôn tập</button>
+        <button data-view="roadmap">
+          <span class="nav-number">02</span>Lộ trình học
+        </button>
+        <button data-view="library">
+          <span class="nav-number">03</span>Tủ tài liệu
+        </button>
+        <button data-view="progress">
+          <span class="nav-number">04</span>Sổ tiến bộ
+        </button>
+      </nav>
+      <div class="notebooks">
+        <div class="notebooks-title">
+          <span>NHỮNG CUỐN VỞ</span
+          ><button id="add-notebook" aria-label="Thêm cuốn vở">+</button>
+        </div>
+        <div id="notebook-list">
+          <span class="muted">Chưa có cuốn vở nào.</span>
+        </div>
+      </div>
+      <div class="sidebar-note">
+        <span class="tape"></span><span class="eyebrow">GHI CHÚ NHỎ</span>
+        <p>
+          Không cần biết tất cả.<br />Chỉ cần hiểu thêm<br />một chút mỗi ngày.
+        </p>
+        <span class="signature">— cùng bạn, BlueStudy ♡</span>
+      </div>
+      <div class="aside-bottom">
+        <button data-view="profile" class="profile-link">
+          <span id="avatar" class="avatar">P</span
+          ><span
+            >Góc học tập của bạn<small id="username"
+              >Khám phá một cuốn vở mẫu</small
+            ></span
+          ><span>↗</span></button
+        ><button id="logout" class="text-button" hidden>Đăng nhập</button>
+      </div>
+    </aside>
+    <main>
+      <header class="topbar">
+        <div>
+          Góc học tập <span class="breadcrumb-slash">/</span>
+          <span id="breadcrumb">Sơ đồ bài học</span>
+        </div>
+        <div class="topbar-actions">
+          <div class="language-switch" role="group" aria-label="Ngôn ngữ / Language" translate="no">
+            <button type="button" data-language="en" aria-label="English" aria-pressed="false">EN</button>
+            <button type="button" data-language="vi" aria-label="Tiếng Việt" aria-pressed="true">TV</button>
+          </div>
+          <button id="profile-shortcut" class="help-button mobile-profile" aria-label="Hồ sơ học tập">◉</button>
+          <span id="mode-badge" class="mode-badge">◦ Vở mẫu</span
+          ><button id="help" class="help-button" aria-label="Hướng dẫn sử dụng">
+            ?
+          </button>
+        </div>
+      </header>
+      <div class="main-inner">
+        <div id="notice" role="status" aria-live="polite"></div>
+        <section id="content" tabindex="-1"></section>
+        <footer>
+          <span
+            >BlueStudy <span class="footer-pencil">✎</span> Viết tiếp sự tò mò của
+            bạn.</span
+          ><span>Học từng chút. Hiểu thật lâu.</span>
+        </footer>
+      </div>
+    </main>
+    <dialog id="help-dialog">
+      <div class="dialog-head">
+        <span class="eyebrow">MỞ TRANG ĐẦU TIÊN</span
+        ><button
+          id="close-help"
+          class="text-button"
+          aria-label="Đóng hướng dẫn"
+        >
+          ×
+        </button>
+      </div>
+      <h2>Một cuốn vở, nhiều cách học.</h2>
+      <ol>
+        <li>Thêm ảnh, PDF hoặc ghi chú vào <strong>Tủ tài liệu</strong>.</li>
+        <li>Kiểm tra văn bản, chọn đoạn học và tạo bộ ôn tập.</li>
+        <li>Bấm một tờ ghi chú trên sơ đồ để đọc, hỏi và luyện tập.</li>
+        <li>Xem các câu cần ôn trong <strong>Sổ tiến bộ</strong>.</li>
+      </ol>
+      <p class="muted">
+        Góc học tập tự lưu trên máy này. Thêm tài liệu của bạn để bắt đầu.
+      </p>
+    </dialog>
+  </body>
+</html>
