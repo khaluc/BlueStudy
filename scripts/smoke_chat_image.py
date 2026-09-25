@@ -26,6 +26,8 @@ def main():
             expect(page.get_by_role('button',name='Kiểm tra văn bản',exact=True)).to_have_count(0)
             page.locator('.chat-compose-box textarea').fill('Đọc ảnh và giải thích ngắn cách dùng since và for.')
             page.locator('.chat-send').click()
+            expect(page.locator('.chat-attachment-preview')).to_have_count(0)
+            expect(page.locator('.quiz-shortcut')).to_have_count(0)
             expect(page.locator('.chat-bubble.assistant')).to_have_count(1,timeout=150000)
             rows = page.request.get('http://127.0.0.1:8000/chat/threads/'+thread+'/turns').json()
             assert rows[0]['image_document_id'] == document
@@ -35,8 +37,18 @@ def main():
             assert 'since' in rows[0]['answer'].lower()
             page.reload()
             expect(page.locator('.chat-bubble.assistant')).to_have_count(1)
+            expect(page.locator('.chat-attachment-preview')).to_have_count(0)
             expect(page.locator('.chat-image-preview')).to_be_visible()
             assert page.locator('.chat-image-preview').evaluate('(image)=>image.complete && image.naturalWidth>0')
+            page.locator('.chat-compose-box textarea').fill('quiz on this me')
+            with page.expect_response(lambda r:r.url.endswith('/turns') and r.request.method=='POST') as sent:
+                page.locator('.chat-send').click()
+            assert sent.value.json()['image_document_id'] is None
+            expect(page.locator('.inline-quiz')).to_be_visible(timeout=240000)
+            expect(page.locator('.chat-image-preview')).to_have_count(1)
+            rows = page.request.get('http://127.0.0.1:8000/chat/threads/'+thread+'/turns').json()
+            assert rows[-1]['provenance']['source_kind'] == 'conversation'
+            assert len(rows[-1]['quiz']['questions']) == 5
             Path('data/benchmarks/design').mkdir(parents=True,exist_ok=True)
             page.screenshot(path='data/benchmarks/design/chat-direct-image.png',full_page=True)
             page.set_viewport_size({'width':390,'height':844})

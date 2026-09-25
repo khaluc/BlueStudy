@@ -6,7 +6,8 @@ from sqlalchemy import select
 from apps.api.dependencies import current_user, get_db
 from apps.api.routers.sessions import owned_session
 from apps.api.schemas.common import Input
-from packages.curriculum.grade9_topics import TOPICS, suggest
+from packages.curriculum.academic_topics import TOPICS, suggest
+from packages.curriculum.grade9_topics import TOPICS as LEGACY_TOPICS
 from packages.db.models import Material, QuizAttempt, StudySession
 
 router = APIRouter(tags=['study materials'])
@@ -47,7 +48,7 @@ class TopicSelection(Input):
 @router.patch('/sessions/{session_id}/curriculum')
 def select_topic(session_id: UUID, body: TopicSelection, user=Depends(current_user), db=Depends(get_db)):
     session = owned_session(db, session_id, user.id)
-    if body.topic_id is not None and body.topic_id not in {t['id'] for t in TOPICS}:
+    if body.topic_id is not None and body.topic_id not in {t['id'] for t in TOPICS + LEGACY_TOPICS}:
         raise HTTPException(422, 'Chủ đề không hợp lệ.')
     session.topic_id = body.topic_id
     db.commit()
@@ -97,7 +98,7 @@ def progress(user=Depends(current_user), db=Depends(get_db)):
         if topic:
             topic_scores.setdefault(topic, []).append(row.score)
     topics = []
-    for topic in TOPICS:
+    for topic in TOPICS + [t for t in LEGACY_TOPICS if t['id'] in topic_scores]:
         scores = topic_scores.get(topic['id'], [])
         average = round(sum(scores) / len(scores) * 20) if scores else None
         topics.append(dict(topic_id=topic['id'], title=topic['title'], attempts=len(scores),

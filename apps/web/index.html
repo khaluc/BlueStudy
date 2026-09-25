@@ -5,17 +5,25 @@
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <meta name="theme-color" content="#f3f1e7" />
     <title>BlueStudy · Cuốn vở tri thức của bạn</title>
-    <link rel="stylesheet" href="/app/fonts/fonts.css" />
-    <link rel="stylesheet" href="/app/notebook.css" />
-    <link rel="stylesheet" href="/app/chat.css" />
-    <link rel="stylesheet" href="/app/chat-quiz.css" />
-    <link rel="stylesheet" href="/app/exams.css" />
-    <script src="/app/i18n.js" defer></script>
-    <script src="/app/app.js" defer></script>
-    <script src="/app/notebook.js" defer></script>
-    <script src="/app/chat-quiz.js" defer></script>
-    <script src="/app/exams.js" defer></script>
-    <script src="/app/chat.js" defer></script>
+    <link rel="stylesheet" href="/app/fonts/fonts.css?v=20260925-home-1" />
+    <link rel="stylesheet" href="/app/notebook.css?v=20260925-home-1" />
+    <link rel="stylesheet" href="/app/chat.css?v=20260925-home-1" />
+    <link rel="stylesheet" href="/app/chat-quiz.css?v=20260925-home-1" />
+    <link rel="stylesheet" href="/app/exams.css?v=20260925-home-1" />
+    <script src="/app/i18n.js?v=20260925-home-1" defer></script>
+    <script src="/app/app.js?v=20260925-home-1" defer></script>
+    <script src="/app/notebook.js?v=20260925-home-1" defer></script>
+    <script src="/app/chat-quiz.js?v=20260925-home-1" defer></script>
+    <script src="/app/exams.js?v=20260925-home-1" defer></script>
+    <script src="/app/chat.js?v=20260925-home-1" defer></script>
+    <link rel="stylesheet" href="/app/speaking.css?v=20260925-home-1" />
+    <script src="/app/speaking-audio.js?v=20260925-home-1" defer></script>
+    <script src="/app/speaking-signals.js?v=20260925-home-1" defer></script>
+    <script src="/app/speaking.js?v=20260925-home-1" defer></script>
+  <link rel="stylesheet" href="/app/learning-map.css?v=20260925-home-1" />
+    <script src="/app/learning-map.js?v=20260925-home-1" defer></script>
+    <link rel="stylesheet" href="/app/home.css?v=20260925-home-1" />
+    <script src="/app/home.js?v=20260925-home-1" defer></script>
   </head>
   <body>
     <a class="skip-link" href="#content">Bỏ qua điều hướng</a>
@@ -29,33 +37,17 @@
       <p class="tag">MỘT CUỐN VỞ. VẠN ĐIỀU HAY.</p>
       <p class="nav-caption">MỤC LỤC</p>
       <nav aria-label="Điều hướng chính">
-        <button data-view="chat"><span class="nav-number">✦</span>Chat AI<span class="active-dot">•</span></button>
+        <button data-view="home"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" focusable="false"><path d="m3 10 9-7 9 7M5 9v11h5v-6h4v6h5V9"/></svg></span>Trang chủ</button>
+        <button data-view="speaking"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" focusable="false"><rect x="8" y="3" width="8" height="12" rx="4"/><path d="M5 11v1a7 7 0 0 0 14 0v-1M12 19v3m-4 0h8"/></svg></span>Speaking</button>
+        <button data-view="chat"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" focusable="false"><path d="M20 11.5a8 8 0 0 1-8 8H5l-3 2v-7a8 8 0 1 1 18-3Z"/><path d="M7 10h8m-8 4h5"/></svg></span>Chat AI<span class="active-dot">•</span></button>
         <button data-view="map">
-          <span class="nav-number">01</span>Sơ đồ bài học<span
+          <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" focusable="false"><circle cx="6" cy="5" r="2"/><circle cx="18" cy="19" r="2"/><path d="M8 5h8a4 4 0 0 1 0 8H8a3 3 0 0 0 0 6h8"/></svg></span>Sơ đồ bài học<span
             class="active-dot"
             >•</span
           >
         </button>
-        <button data-view="exams"><span class="nav-number">✎</span>Đề thi & ôn tập</button>
-        <button data-view="roadmap">
-          <span class="nav-number">02</span>Lộ trình học
-        </button>
-        <button data-view="library">
-          <span class="nav-number">03</span>Tủ tài liệu
-        </button>
-        <button data-view="progress">
-          <span class="nav-number">04</span>Sổ tiến bộ
-        </button>
+        <button data-view="exams"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" focusable="false"><rect x="5" y="4" width="14" height="18" rx="2"/><rect x="9" y="2" width="6" height="4" rx="1"/><path d="m8 12 2 2 5-5m-7 9h8"/></svg></span>Đề thi & ôn tập</button>
       </nav>
-      <div class="notebooks">
-        <div class="notebooks-title">
-          <span>NHỮNG CUỐN VỞ</span
-          ><button id="add-notebook" aria-label="Thêm cuốn vở">+</button>
-        </div>
-        <div id="notebook-list">
-          <span class="muted">Chưa có cuốn vở nào.</span>
-        </div>
-      </div>
       <div class="sidebar-note">
         <span class="tape"></span><span class="eyebrow">GHI CHÚ NHỎ</span>
         <p>
@@ -116,13 +108,13 @@
       </div>
       <h2>Một cuốn vở, nhiều cách học.</h2>
       <ol>
-        <li>Thêm ảnh, PDF hoặc ghi chú vào <strong>Tủ tài liệu</strong>.</li>
-        <li>Kiểm tra văn bản, chọn đoạn học và tạo bộ ôn tập.</li>
-        <li>Bấm một tờ ghi chú trên sơ đồ để đọc, hỏi và luyện tập.</li>
-        <li>Xem các câu cần ôn trong <strong>Sổ tiến bộ</strong>.</li>
+        <li>Speaking: chọn câu hỏi, nghe mẫu và luyện nói.</li>
+        <li>Đề thi & ôn tập: làm bài, xem giải thích và đánh giá.</li>
+        <li>Sơ đồ bài học: xem kỹ năng và lộ trình ôn tập từ kết quả.</li>
+        <li>Chat AI: hỏi và thảo luận nội dung đang học.</li>
       </ol>
       <p class="muted">
-        Góc học tập tự lưu trên máy này. Thêm tài liệu của bạn để bắt đầu.
+        Hoàn thành một bài luyện tập để bắt đầu xây dựng lộ trình.
       </p>
     </dialog>
   </body>

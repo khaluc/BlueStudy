@@ -87,6 +87,55 @@
   line-height: 1.9;
   margin: 8px 0;
 }
+.exam-review-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin: 22px 0 12px;
+}
+.exam-review-metrics > div {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px;
+  background: #f1f4e9;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+}
+.exam-review-metrics strong { font: 26px var(--serif); }
+.exam-review-metrics span { font-size: 12px; }
+.exam-coaching {
+  margin: 24px 0;
+  padding: 22px;
+  background: #f7f9f1;
+  border: 1px solid #ced9c5;
+  border-radius: 8px;
+}
+.exam-coaching > p { line-height: 1.9; }
+.exam-coaching > small { display: block; margin: 15px 0; }
+.exam-study-plan { list-style: none; padding: 0; }
+.exam-study-plan > .exam-study-step {
+  margin: 16px 0;
+  padding: 20px;
+  border-left: 3px solid var(--green);
+  background: var(--sheet);
+  border-radius: 0 6px 6px 0;
+  overflow-wrap: anywhere;
+}
+.exam-study-step > .eyebrow { display: inline-block; margin: 0 12px 10px 0; }
+.exam-study-step h4 { font-size: 16px; line-height: 1.6; margin: 8px 0; }
+.exam-study-step ul { padding-left: 20px; }
+.exam-plan-check { padding: 12px; background: #eef2e5; border-radius: 4px; }
+.exam-plan-check p { margin: 6px 0 0; }
+.exam-plan-links { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 14px; }
+.exam-plan-links button { min-width: 38px; }
+@media (max-width: 700px) {
+  .exam-coaching { padding: 14px; }
+  .exam-study-plan > .exam-study-step { padding: 14px; }
+  .exam-review-metrics { gap: 6px; }
+  .exam-review-metrics > div { padding: 10px; }
+  .exam-review-metrics span { font-size: 10px; }
+}
 .exam-page blockquote {
   font-size: 12px;
   line-height: 1.7;

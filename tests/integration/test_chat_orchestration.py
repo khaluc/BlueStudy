@@ -28,6 +28,21 @@ def test_chat_sends_system_prompt_and_keeps_only_answer():
                                    'provider': 'ollama', 'fallback_reason': None}
 
 
+@pytest.mark.parametrize('purpose', ['chat', 'study_bundle'])
+def test_english_language_reaches_model_system_prompt(purpose):
+    def handler(request):
+        payload = json.loads(request.content)
+        system = payload['messages'][0]['content']
+        assert 'Response language: English.' in system
+        assert 'Giải thích bằng tiếng Việt rõ ràng' not in system
+        assert 'options' in system and 'explanations in English' in system
+        return httpx.Response(200, json={'done':True, 'message':{'content':'English response'}})
+    with client(handler) as app:
+        response = app.post('/chat', json={'message':'Giải thích giúp em',
+                           'purpose':purpose, 'response_language':'en'})
+        assert response.status_code == 200
+
+
 @pytest.mark.parametrize('message', ['', '   ', 'x' * 8001])
 def test_invalid_input_does_not_call_model(message):
     def handler(request):

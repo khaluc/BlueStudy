@@ -15,7 +15,9 @@ from packages.db.models import Document, Job, StudySession, User, Material
 from packages.storage.local import LocalStorage
 from apps.worker.tasks.ocr_task import process_upload
 from apps.worker.tasks.chat_task import process_chat
+from apps.worker.tasks.chat_translation_task import process_chat_translation
 from apps.worker.tasks.exam_task import process_exam,process_exam_feedback
+from apps.worker.tasks.speaking_task import process_speaking
 
 logger = logging.getLogger('padayon.worker')
 
@@ -78,7 +80,9 @@ def main():
                 chatted = process_chat(sessions, orchestrator.model, storage)
                 examined = process_exam(sessions, orchestrator.model)
                 coached = process_exam_feedback(sessions, orchestrator.model)
-                if uploaded or studied or chatted or examined or coached:
+                translated = process_chat_translation(sessions, orchestrator.model)
+                spoken = process_speaking(sessions, orchestrator.model)
+                if uploaded or studied or chatted or examined or coached or translated or spoken:
                     continue
             except SQLAlchemyError:
                 logger.error('Database error; transaction rolled back. Retrying after poll interval.')

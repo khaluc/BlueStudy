@@ -1,5 +1,5 @@
 from uuid import UUID
-from typing import Annotated
+from typing import Annotated, Literal
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import Field, StrictInt
 from sqlalchemy import select
@@ -52,6 +52,7 @@ def get(exam_id:UUID,user=Depends(current_user),db=Depends(get_db)):
 
 
 class Submission(Input):
+    response_language:Literal['vi','en']='vi'
     answers:list[Annotated[StrictInt,Field(ge=0,le=3)]|None]=Field(min_length=1,max_length=100)
 
 
@@ -61,7 +62,8 @@ def submit(exam_id:UUID,body:Submission,user=Depends(current_user),db=Depends(ge
     if exam.status!='ready':raise HTTPException(409,'Đề đang được xử lý hoặc cần kiểm tra.')
     if len(body.answers)!=len(exam.structure['questions']):raise HTTPException(422,'Số đáp án không khớp số câu.')
     attempt=ExamAttempt(owner_id=user.id,exam_id=exam.id,answers=body.answers,
-                        result=grade_exam(exam.structure,exam.analysis,body.answers))
+                        result={**grade_exam(exam.structure,exam.analysis,body.answers),
+                                'response_language':body.response_language})
     db.add(attempt);db.commit();return attempt
 
 
@@ -70,3 +72,36 @@ def attempts(exam_id:UUID,user=Depends(current_user),db=Depends(get_db)):
     owned_exam(db,exam_id,user.id)
     return db.scalars(select(ExamAttempt).where(ExamAttempt.exam_id==str(exam_id),ExamAttempt.owner_id==user.id)
         .order_by(ExamAttempt.created_at.desc()).limit(20)).all()
+
+
+class CoachingRequest(Input):
+    response_language:Literal['vi','en']='vi'
+    translate_existing:bool=False
+
+
+@router.post('/{exam_id}/attempts/{attempt_id}/coaching',status_code=202)
+def retry_coaching(exam_id:UUID,attempt_id:UUID,body:CoachingRequest,user=Depends(current_user),db=Depends(get_db)):
+    owned_exam(db,exam_id,user.id)
+    attempt=db.scalar(select(ExamAttempt).where(ExamAttempt.id==str(attempt_id),
+        ExamAttempt.exam_id==str(exam_id),ExamAttempt.owner_id==user.id).with_for_update())
+    if not attempt:raise HTTPException(404,'Không tìm thấy kết quả làm bài.')
+    if attempt.status=='queued':return attempt
+    versions=dict(attempt.result.get('coaching_translations',{}))
+    if attempt.coaching:
+        current_language=attempt.coaching.get('response_language',attempt.result.get('response_language','vi'))
+        attempt.coaching={**attempt.coaching,'response_language':current_language}
+        versions[current_language]=attempt.coaching
+    if body.translate_existing and body.response_language in versions:
+        attempt.coaching=versions[body.response_language]
+        attempt.result={**attempt.result,'coaching_translations':versions,'response_language':body.response_language}
+        attempt.status='ready'
+        db.commit()
+        return attempt
+    attempt.result={**attempt.result,'response_language':body.response_language,
+                    'coaching_translations':versions if body.translate_existing else {},
+                    'coaching_mode':'translate' if body.translate_existing and attempt.coaching else 'generate'}
+    attempt.result.pop('coaching_error',None)
+    if attempt.result['coaching_mode']=='generate':attempt.coaching=None
+    attempt.status='queued'
+    db.commit()
+    return attempt

@@ -13,6 +13,8 @@ from apps.api.routers import documents, sessions, users, uploads
 from apps.api.routers import materials
 from apps.api.routers import chat
 from apps.api.routers import exams
+from apps.api.routers import speaking
+from apps.api.routers import learning_map
 from apps.api.services.body_limit import UploadBodyLimit
 from packages.db.database import build_database
 from packages.storage.local import LocalStorage
@@ -31,6 +33,10 @@ def create_app(settings: Settings | None = None):
 
     app = FastAPI(title='BlueStudy API — Phase 4', lifespan=lifespan)
     app.state.local_access_file = settings.local_access_file
+    app.state.settings = settings
+    import threading
+    app.state.speaking_tokens = {}
+    app.state.speaking_token_lock = threading.Lock()
 
     @app.post('/local-session')
     def local_session(request: Request, response: Response, db=Depends(get_db)):
@@ -56,6 +62,8 @@ def create_app(settings: Settings | None = None):
     app.include_router(materials.router)
     app.include_router(chat.router)
     app.include_router(exams.router)
+    app.include_router(speaking.router)
+    app.include_router(learning_map.router)
     app.mount('/app', StaticFiles(directory=Path(__file__).resolve().parents[1] / 'web', html=True), name='web')
 
     @app.get('/health/live')
@@ -67,7 +75,7 @@ def create_app(settings: Settings | None = None):
         try:
             with engine.connect() as connection:
                 revision = connection.execute(text('SELECT version_num FROM alembic_version')).scalar()
-            if revision != '0008':
+            if revision != '0010':
                 raise HTTPException(503, 'Cần cập nhật schema.')
         except SQLAlchemyError as exc:
             raise HTTPException(503, 'Cơ sở dữ liệu chưa sẵn sàng.') from exc

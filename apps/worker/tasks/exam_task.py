@@ -2,7 +2,7 @@ import httpx
 from sqlalchemy import select
 from packages.db.models import Exam, ExamAttempt, Document
 from packages.core.exam import parse_exam
-from apps.chat.agents.exam_agent import analyze_batch,build_analysis_prompt,coach_result
+from apps.chat.agents.exam_agent import analyze_batch,build_analysis_prompt,coach_result,translate_coaching
 
 
 def process_exam(sessions,model):
@@ -42,7 +42,16 @@ def process_exam_feedback(sessions,model):
             .order_by(ExamAttempt.created_at).with_for_update(skip_locked=True).limit(1))
         if attempt is None:return False
         try:
-            attempt.coaching=coach_result(attempt.result,model)
+            language=attempt.result.get('response_language','vi')
+            if attempt.result.get('coaching_mode')=='translate' and attempt.coaching:
+                attempt.coaching=translate_coaching(attempt.coaching,language,model)
+            else:
+                attempt.coaching=coach_result(attempt.result,model)
+            attempt.result={**attempt.result,'coaching_translations':{
+                **attempt.result.get('coaching_translations',{}),language:attempt.coaching}}
             attempt.status='ready'
-        except (httpx.HTTPError,ValueError,KeyError,TypeError):attempt.status='failed'
+        except (httpx.HTTPError,ValueError,KeyError,TypeError) as error:
+            attempt.status='failed'
+            attempt.result={**attempt.result,'coaching_error':
+                'model_unavailable' if isinstance(error,httpx.HTTPError) else 'invalid_coaching_output'}
     return True

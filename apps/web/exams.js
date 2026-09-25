@@ -1,7 +1,10 @@
 "use strict";
 let examTimer = null;
+let examLanguageCleanup = () => {};
 function disposeExam() {
   clearTimeout(examTimer);
+  examLanguageCleanup();
+  examLanguageCleanup = () => {};
 }
 window.addEventListener("hashchange", () => {
   if (!token) return;
@@ -9,6 +12,9 @@ window.addEventListener("hashchange", () => {
   if (location.hash.startsWith("#exam=")) navigation = examView(location.hash.slice(6));
   else if (location.hash === "#exams") navigation = show("exams");
   else if (location.hash === "#chat") navigation = show("chat");
+  else if (location.hash === "#speaking") navigation = show("speaking");
+  else if (location.hash === "#home" || location.hash === "") navigation = show("home");
+  else if (location.hash === "#map") navigation = show("map");
   if (navigation) navigation.catch(error => notice.textContent = error.message);
 });
 const examStatus = (status) =>
@@ -100,6 +106,38 @@ async function examView(id, chosenAttempt = null) {
   let answers = Array(exam.structure?.questions.length || 0).fill(null),
     submitting = false;
   const cacheKey = "padayon-exam-draft-" + id;
+  let languageRequest = false;
+  const requestedLanguages = new Set();
+  const coachingLanguage = item => item?.coaching?.response_language ||
+    (item?.result?.coaching_mode === "translate" ? "vi" : item?.result?.response_language) || "vi";
+  async function ensureCoachingLanguage(force = false) {
+    if (!active() || !attempt?.coaching || attempt.status === "queued" || languageRequest ||
+        coachingLanguage(attempt) === uiLanguage) return;
+    const requestedId = attempt.id;
+    const key = requestedId + ":" + uiLanguage;
+    if (!force && requestedLanguages.has(key)) return;
+    requestedLanguages.add(key);
+    languageRequest = true;
+    try {
+      const updated = await api(`/exams/${id}/attempts/${requestedId}/coaching`, {
+        method:"POST", body:{response_language:uiLanguage, translate_existing:true},
+      });
+      if (!active()) return;
+      attempts = attempts.map(item => item.id === updated.id ? updated : item);
+      if (attempt?.id === requestedId) attempt = updated;
+    } catch (error) {
+      if (active()) notice.textContent = error.message;
+    } finally {
+      languageRequest = false;
+      if (active()) { render(); schedule(); }
+    }
+  }
+  const onLanguageChange = () => {
+    if (attempt) requestedLanguages.delete(attempt.id + ":" + uiLanguage);
+    render(); ensureCoachingLanguage();
+  };
+  window.addEventListener("ui-language-change", onLanguageChange);
+  examLanguageCleanup = () => window.removeEventListener("ui-language-change", onLanguageChange);
   try {
     const saved = JSON.parse(sessionStorage.getItem(cacheKey));
     if (
@@ -189,6 +227,16 @@ async function examView(id, chosenAttempt = null) {
           `${result.ungraded} câu chưa có đáp án để chấm · ${result.total} câu trong đề`,
         ),
       );
+      const metrics = el("div", null, "exam-review-metrics");
+      const answered = result.feedback.filter(row => row.selected !== null).length;
+      const wrong = result.feedback.filter(row => row.selected !== null && row.is_correct === false).length;
+      for (const [label, value] of [["Đã trả lời", `${answered}/${result.total}`],
+        ["Câu trả lời sai", wrong], ["Câu bỏ trống", result.total - answered]]) {
+        const metric = el("div");
+        metric.append(el("strong", String(value)), el("span", label));
+        metrics.append(metric);
+      }
+      box.append(metrics, el("p", "Câu bỏ trống không được dùng để kết luận bạn yếu kỹ năng đó.", "muted"));
       const table = el("table");
       const head = el("tr");
       for (const text of ["Kỹ năng", "Đúng / đã chấm", "Câu cần ôn"])
@@ -204,24 +252,74 @@ async function examView(id, chosenAttempt = null) {
         table.append(row);
       }
       box.append(table);
-      if (attempt.coaching) {
-        box.append(
-          el("h3", "AI hỗ trợ ôn tập"),
+      const coaching = el("section", null, "exam-coaching");
+      coaching.setAttribute("aria-label", "Đánh giá và lộ trình học tập");
+      coaching.append(el("h3", "Đánh giá và lộ trình học tập"));
+      table.before(coaching);
+      const matchingLanguage = coachingLanguage(attempt) === uiLanguage;
+      if (attempt.coaching && matchingLanguage) {
+        coaching.append(
           sourceEl("p", attempt.coaching.summary),
         );
-        const list = el("ol");
-        for (const step of attempt.coaching.practice)
-          list.append(sourceEl("li", step));
-        box.append(list);
+        if (attempt.coaching.roadmap?.length) {
+          const path = el("ol", null, "exam-study-plan");
+          for (const step of attempt.coaching.roadmap) {
+            const card = el("li", null, "exam-study-step");
+            card.append(el("span", `Ngày ${step.day} · ${step.minutes} phút`, "eyebrow"),
+              el("span", exam.skill_labels[step.skill] || step.skill, "pill"),
+              sourceEl("h4", step.goal));
+            const activities = el("ul");
+            for (const activity of step.activities) activities.append(sourceEl("li", activity));
+            const check = el("div", null, "exam-plan-check");
+            check.append(el("strong", "Mục tiêu tự kiểm tra"), sourceEl("p", step.success_criteria));
+            card.append(activities, check);
+            if (step.question_numbers.length) {
+              const links = el("div", null, "exam-plan-links");
+              links.append(el("span", "Ôn lại câu:"));
+              for (const number of step.question_numbers) links.append(button(String(number), () => {
+                const question = root.querySelector(`#exam-question-${number}`);
+                question?.scrollIntoView({block:"start", behavior:"smooth"});
+                question?.focus({preventScroll:true});
+              }, "secondary"));
+              card.append(links);
+            }
+            path.append(card);
+          }
+          coaching.append(path);
+        } else {
+          const list = el("ol");
+          for (const step of attempt.coaching.practice || []) list.append(sourceEl("li", step));
+          coaching.append(list);
+        }
+        coaching.append(el("small", `${attempt.coaching.model || "AI"} · Nội dung chưa qua giáo viên kiểm duyệt`, "muted"));
       } else
-        box.append(
+        coaching.append(
           el(
             "p",
-            attempt.status === "failed"
+            attempt.coaching && !matchingLanguage
+              ? (attempt.status === "failed" ? "Chưa chuyển được ngôn ngữ. Bấm thử lại." : "Đang chuyển nhận xét và lộ trình sang ngôn ngữ bạn chọn…")
+              : attempt.status === "failed"
               ? "Chưa tạo được nhận xét AI. Bạn vẫn có thể ôn theo bảng kỹ năng và giải thích từng câu."
               : "AI đang phân tích kết quả để gợi ý ôn tập…",
           ),
         );
+      if (attempt.coaching && !matchingLanguage && attempt.status !== "queued") coaching.append(button(
+        "Thử chuyển ngôn ngữ lại", () => ensureCoachingLanguage(true), "secondary",
+      ));
+      else if (attempt.status !== "queued") coaching.append(button(
+        attempt.coaching?.roadmap ? "Tạo lại lộ trình" : "Tạo đánh giá và lộ trình",
+        async () => {
+          const refreshed = await api(`/exams/${id}/attempts/${attempt.id}/coaching`, {
+            method:"POST", body:{response_language:uiLanguage},
+          });
+          if (!active()) return;
+          attempt = refreshed;
+          attempts = attempts.map(item => item.id === refreshed.id ? refreshed : item);
+          render();
+          schedule();
+          ensureCoachingLanguage();
+        }, "secondary",
+      ));
       box.append(
         button(
           "Làm lại đề",
@@ -294,6 +392,8 @@ async function examView(id, chosenAttempt = null) {
             (item) => item.number === q.number,
           );
         const box = el("fieldset", null, "inline-quiz-question");
+        box.id = `exam-question-${q.number}`;
+        box.tabIndex = -1;
         const legend = el("legend");
         legend.append(el("span", `Câu ${q.number}. `));
         legend.append(q.stem
@@ -375,7 +475,7 @@ async function examView(id, chosenAttempt = null) {
       try {
         const result = await api("/exams/" + id + "/attempts", {
           method: "POST",
-          body: { answers },
+          body: { answers, response_language: uiLanguage },
         });
         if (!active()) return;
         attempt = result;
@@ -423,6 +523,8 @@ async function examView(id, chosenAttempt = null) {
         attempt?.status === "queued")
     )
       examTimer = setTimeout(poll, 2500);
+    if (active() && attempt?.status !== "queued" && !languageRequest)
+      queueMicrotask(() => ensureCoachingLanguage());
   }
   render();
   schedule();

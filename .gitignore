@@ -10,3 +10,11 @@ data/benchmarks/
 data/*.db
 data/local-demo.json
 data/backups/
+
+# Local runtime, credentials and test artifacts
+.env.*
+!.env.example
+pytest-cache-files-*/
+*.log
+*.wav
+*.webm

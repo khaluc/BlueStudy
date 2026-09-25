@@ -13,7 +13,13 @@ def wants_quiz(message, action='auto'):
                           r'(make|create|generate).{0,40}quiz|kiem tra.{0,15}(minh|tui|toi))\b', text))
 
 
-def quiz_trace():
+def quiz_trace(language='vi'):
+    if language == 'en':
+        return [
+            {'agent':'Classifier Agent','status':'done','detail':'Recognised a quiz request using intent rules.'},
+            {'agent':'Source Agent','status':'pending','detail':'Waiting for source content.'},
+            {'agent':'Quiz Agent','status':'pending','detail':'Waiting to generate and validate multiple-choice questions.'},
+        ]
     return [
         {'agent':'Classifier Agent','status':'done','detail':'Nhận diện yêu cầu quiz bằng quy tắc.'},
         {'agent':'Source Agent','status':'pending','detail':'Đang chờ lấy nội dung để tạo câu hỏi.'},

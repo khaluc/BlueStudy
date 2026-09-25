@@ -7,15 +7,12 @@ async function topicSelector(id, selected) {
   select.append(unknown);
   const topics = await api("/curriculum");
   for (const t of topics) {
-    const option = el("option", "Unit " + t.unit + " · " + t.title);
+    const option = el("option", t.title);
     option.value = t.id;
     select.append(option);
   }
   select.value = selected || "";
-  const source = el("a", "Nguồn chủ đề: HEID / Global Success");
-  source.href = topics[0].source_url;
-  source.target = "_blank";
-  source.rel = "noopener noreferrer";
+  const source = el("small", "Tiếng Anh học thuật");
   box.append(
     button(
       "Lưu chủ đề",
@@ -108,6 +105,9 @@ function field(parent, title, tag = "input", value = "") {
   return n;
 }
 function reset(title, description) {
+  if (typeof disposeHome === "function") disposeHome();
+  if (typeof disposeLearningMap === "function") disposeLearningMap();
+  if (typeof disposeSpeaking === "function") disposeSpeaking();
   if (typeof disposeExam === "function") disposeExam();
   if (typeof disposeNotebook === "function") disposeNotebook();
   if (typeof disposeChat === "function") disposeChat();
@@ -152,20 +152,25 @@ async function startWorkspace() {
   await openLocalSession();
   if (location.hash.startsWith("#exam=")) return examView(location.hash.slice(6));
   if (location.hash === "#exams") return show("exams");
-  await show(location.hash === "#chat" ? "chat" : "map");
+  if (location.hash === "#speaking") return show("speaking");
+  await show(location.hash === "#chat" ? "chat" : location.hash === "#map" ? "map" : "home");
 }
 async function login(afterView = "library") {
   await openLocalSession();
   await show(afterView);
 }
 async function show(view) {
+  if (["roadmap", "library", "progress"].includes(view)) view = "map";
   window.history.replaceState(null, "", view === "chat" ? "#chat" : location.pathname);
   setNav(view);
+  if (view === "home") { window.history.replaceState(null,"","#home"); return homePage(); }
+  if (view === "map") window.history.replaceState(null,"","#map");
+  if (view === "speaking") { window.history.replaceState(null,"","#speaking"); return speakingHome(); }
   if (view === "exams") { window.history.replaceState(null,"","#exams"); return examHome(); }
   if (view === "chat") return chatWorkspace();
   if (!token) {
     updateIdentity(null);
-    if (view === "map") return notebookDashboard();
+    if (view === "map") return learningMap();
     if (view === "roadmap") return roadmap();
     return login();
   }
@@ -178,7 +183,7 @@ async function show(view) {
   if (view === "history") return sessionHistory();
   if (view === "progress") return progress();
   if (view === "profile") return profile(u);
-  if (view === "map") return notebookDashboard();
+  if (view === "map") return learningMap();
   if (view === "roadmap") return roadmap();
 }
 async function library() {

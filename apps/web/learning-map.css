@@ -1,0 +1,11 @@
+.learning-actions { display:flex; flex-wrap:wrap; gap:12px; margin:24px 0; }
+.learning-stats { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:20px; }
+.learning-columns { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:24px; }
+.learning-columns > *, .learning-stats > * { min-width:0; }
+.learning-bar { display:grid; grid-template-columns:1fr auto; gap:8px; margin:18px 0; font-size:14px; }
+.learning-bar span { text-align:right; }
+.learning-track { grid-column:1/-1; height:9px; border-radius:6px; background:#e8eadf; overflow:hidden; }
+.learning-track > div { height:100%; background:#416d60; border-radius:6px; }
+.learning-step { padding:22px 0; border-top:1px solid #d8ddca; }
+.learning-step h3 { margin:8px 0; }
+@media(max-width:760px) { .learning-columns,.learning-stats { grid-template-columns:1fr; } .learning-bar { grid-template-columns:1fr; } .learning-bar span { text-align:left; } }

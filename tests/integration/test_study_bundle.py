@@ -8,6 +8,19 @@ from packages.curriculum.grade9_topics import suggest
 SOURCE = 'A community volunteer helps neighbours. Trees provide shade. Buses carry people. Parks are public spaces. Libraries lend books.'
 
 
+def test_academic_topics_are_default_and_selectable(backend):
+    client, _, owner, *_ = backend
+    topics = client.get('/curriculum', headers=owner).json()
+    assert topics and all(t['id'].startswith('ae-') for t in topics)
+    doc = client.post('/documents', headers=owner,
+                      json={'title':'Research', 'text':'Research evidence supports the hypothesis.'}).json()
+    session = client.post('/sessions', headers=owner, json={'document_id':doc['id']}).json()
+    path = '/sessions/' + session['id'] + '/curriculum'
+    matches = client.get(path, headers=owner).json()['matches']
+    assert matches[0]['topic']['id'] == 'ae-research'
+    assert client.patch(path, headers=owner, json={'topic_id':'ae-research'}).status_code == 200
+
+
 def bundle():
     facts = [('Who helps neighbours?', 'A community volunteer', 'A community volunteer helps neighbours.'),
              ('What provides shade?', 'Trees', 'Trees provide shade.'),
@@ -109,7 +122,8 @@ def test_topic_preferences_and_owner_scoped_memory(backend):
     for _ in range(3):
         assert client.post('/materials/'+mid+'/attempts',headers=a,
             json={'answers':[(v+1)%4 for v in correct_answers(backend,mid)]}).status_code==201
-    assert client.get('/users/me/progress',headers=a).json()['topics'][0]['status']=='needs_practice'
+    progress = client.get('/users/me/progress',headers=a).json()['topics']
+    assert next(t for t in progress if t['topic_id']=='gs9-u1')['status']=='needs_practice'
     assert len(client.get('/users/me/review',headers=a).json())==5
     assert client.get('/users/me/review',headers=b).json()==[]
     with sessions() as db:

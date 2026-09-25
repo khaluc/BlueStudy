@@ -30,6 +30,8 @@ services:
       DATABASE_URL: postgresql+psycopg://padayon:${POSTGRES_PASSWORD}@postgres:5432/padayon
       STORAGE_ROOT: /app/data/uploads
       LOCAL_ACCESS_FILE: /app/local-access.json
+      ASSEMBLYAI_API_KEY: ${ASSEMBLYAI_API_KEY:-}
+      ASSEMBLYAI_SPEECH_MODEL: ${ASSEMBLYAI_SPEECH_MODEL:-universal-3-5-pro}
     volumes:
       - source_data:/app/data/uploads
       - ./data/local-demo.json:/app/local-access.json:ro

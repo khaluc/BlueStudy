@@ -58,6 +58,43 @@ async function chatWorkspace(threadId = null) {
     monitorOpen = window.innerWidth > 950;
   const active = () => ticket === generation;
   const quizDrafts = new Map();
+  const translationRequests = new Set();
+  const translationErrors = new Set();
+  let translatingRequest = false;
+  const originalLanguage = turn => turn.provenance?.response_language || "vi";
+  const translationPending = () => turns.some(turn => turn.provenance?.translation_status === "queued");
+  async function queueTranslations(preferredId = null) {
+    if (!active() || translatingRequest || translationPending()) return;
+    const candidates = [...turns].reverse();
+    const turn = candidates.find(item => (!preferredId || item.id === preferredId) &&
+      item.status === "succeeded" && originalLanguage(item) !== uiLanguage &&
+      !item.translations?.[uiLanguage] && !translationRequests.has(item.id + ":" + uiLanguage));
+    if (!turn) return;
+    const language = uiLanguage, key = turn.id + ":" + language;
+    translationRequests.add(key);
+    translationErrors.delete(key);
+    translatingRequest = true;
+    try {
+      const updated = await api(`/chat/threads/${turn.thread_id}/turns/${turn.id}/translation`, {
+        method:"POST", body:{response_language:language},
+      });
+      if (!active()) return;
+      turns = turns.map(item => item.id === updated.id ? updated : item);
+    } catch (error) {
+      translationErrors.add(key);
+      if (active()) notice.textContent = error.message;
+    } finally {
+      translatingRequest = false;
+      if (active()) { renderMessages(false); schedulePoll(); }
+    }
+  }
+  const onChatLanguageChange = () => {
+    translationRequests.clear();
+    translationErrors.clear();
+    renderMessages(false);
+    queueTranslations();
+    if (translationPending()) schedulePoll();
+  };
   let requestedAction = "auto";
   if (token) {
     [user, threads] = await Promise.all([
@@ -81,11 +118,7 @@ async function chatWorkspace(threadId = null) {
         if (!active()) return;
       }
       sessionStorage.setItem("padayon-chat-" + user.id, current.id);
-      const recentImage = turns.at(-1)?.image_document_id;
-      if (recentImage) {
-        pendingDocument = await api("/documents/" + recentImage);
-        if (!active()) return;
-      }
+
     }
   } else updateIdentity(null);
   document.querySelector("#mode-badge").textContent = user
@@ -137,7 +170,7 @@ async function chatWorkspace(threadId = null) {
     toolbarCopy = el("div");
   toolbarCopy.append(
     el("strong", "Study with BlueStudy"),
-    el("small", "Trợ lý học tập dành cho học sinh Việt Nam"),
+    el("small", "Nền tảng học tiếng Anh học thuật"),
   );
   toolbarTitle.append(el("span", "✦", "chat-logo"), toolbarCopy);
   const threadSelect = el("select", null, "chat-thread-select");
@@ -216,23 +249,9 @@ async function chatWorkspace(threadId = null) {
     ),
     count,
   );
-  const quizShortcut = button(
-    "✦ Tạo quiz trắc nghiệm",
-    () => {
-      if (hasPending() || sending || busy) return;
-      requestedAction = "quiz";
-      if (!input.value.trim())
-        input.value =
-          "Tạo quiz trắc nghiệm để mình chọn đáp án về nội dung đang học.";
-      input.oninput();
-      composer.requestSubmit();
-    },
-    "secondary quiz-shortcut",
-  );
   composeArea.append(
     attachment,
     sourceActions,
-    quizShortcut,
     composer,
     fileInput,
     composeFooter,
@@ -245,6 +264,7 @@ async function chatWorkspace(threadId = null) {
   root.append(reviewDialog);
   chatCleanup = () => {
     clearTimeout(timer);
+    window.removeEventListener("ui-language-change", onChatLanguageChange);
     if (reviewDialog.open) reviewDialog.close();
   };
   function renderMonitorVisibility() {
@@ -261,7 +281,6 @@ async function chatWorkspace(threadId = null) {
   function lockComposer() {
     const pending = hasPending() || sending || busy;
     sendButton.disabled = pending || !user;
-    quizShortcut.disabled = pending || !user;
     attachButton.disabled = pending;
     threadSelect.disabled = busy || sending;
     newButton.disabled = busy || sending;
@@ -308,7 +327,9 @@ async function chatWorkspace(threadId = null) {
       }
       transcript.append(welcome);
     }
-    for (const turn of turns) {
+    for (const original of turns) {
+      const localized = original.translations?.[uiLanguage];
+      const turn = localized ? {...original, ...localized} : original;
       const row = el("div", null, "chat-turn");
       row.append(sourceEl("div", turn.message, "chat-bubble user"));
       if (turn.image_document_id) {
@@ -320,6 +341,19 @@ async function chatWorkspace(threadId = null) {
       }
       if (turn.status === "succeeded") {
         const answer = el("div", null, "chat-bubble assistant");
+        if (originalLanguage(original) !== uiLanguage && !localized) {
+          const key = turn.id + ":" + uiLanguage;
+          const failed = translationErrors.has(key) ||
+            (turn.provenance?.translation_status === "failed" && turn.provenance?.translation_language === uiLanguage);
+          answer.append(el("p", failed ? "Chưa dịch được tin nhắn. Bấm thử lại." : "Đang chuyển câu trả lời sang ngôn ngữ bạn chọn…"));
+          if (failed) answer.append(button("Thử dịch lại", () => {
+            translationRequests.delete(key);
+            return queueTranslations(turn.id);
+          }, "secondary"));
+          row.append(answer);
+          transcript.append(row);
+          continue;
+        }
         answer.append(chatMarkdown(turn.answer || ""));
         if (turn.quiz) {
           if (!quizDrafts.has(turn.id))
@@ -335,7 +369,9 @@ async function chatWorkspace(threadId = null) {
                 { method: "POST", body: { answers } },
               );
               if (!active()) return;
-              turn.quiz_result = result;
+              original.quiz_result = result;
+              await refreshTurns();
+              if (!active()) return;
               renderMessages(false);
               renderMonitor();
             }),
@@ -641,7 +677,8 @@ async function chatWorkspace(threadId = null) {
         renderAttachment();
         renderMonitor();
       }
-      if (hasPending()) await refreshTurns();
+      if (hasPending() || translationPending()) await refreshTurns();
+      queueTranslations();
       pollFailures = 0;
     } catch (error) {
       if (active()) {
@@ -650,7 +687,7 @@ async function chatWorkspace(threadId = null) {
           "Chưa cập nhật được trạng thái. Lịch sử đã nhận vẫn được lưu; hệ thống sẽ thử lại.";
       }
     } finally {
-      if (active() && (hasPending() || pendingDocument?.status === "queued"))
+      if (active() && (hasPending() || translationPending() || pendingDocument?.status === "queued"))
         timer = setTimeout(poll, Math.min(10000, 1800 + pollFailures * 1500));
     }
   }
@@ -667,7 +704,8 @@ async function chatWorkspace(threadId = null) {
       : null;
     const text =
       input.value.trim() ||
-      (imageId ? "Đọc nội dung trong ảnh và giải thích giúp mình." : "");
+      (imageId ? t("Đọc nội dung trong ảnh và giải thích giúp mình.") : "");
+    const responseLanguage = uiLanguage;
     if (!text) return;
     notice.textContent = "";
     sending = true;
@@ -681,10 +719,15 @@ async function chatWorkspace(threadId = null) {
           message: text,
           image_document_id: imageId,
           action: requestedAction,
+          response_language: responseLanguage,
         },
       });
       if (!active()) return;
       turns.push(turn);
+      if (imageId && pendingDocument?.id === imageId) {
+        pendingDocument = null;
+        renderAttachment();
+      }
       requestedAction = "auto";
       input.value = "";
       input.oninput();
@@ -843,7 +886,12 @@ async function chatWorkspace(threadId = null) {
   renderMessages();
   renderAttachment();
   renderMonitor();
-  if (hasPending()) schedulePoll();
+  window.addEventListener("ui-language-change", onChatLanguageChange);
+  queueTranslations();
+  if (hasPending() || translationPending()) schedulePoll();
 }
 
-startWorkspace().catch((error) => (notice.textContent = error.message));
+// All deferred feature scripts, including Speaking, must load before routing.
+window.addEventListener('DOMContentLoaded', () => {
+  startWorkspace().catch((error) => (notice.textContent = error.message));
+}, {once:true});

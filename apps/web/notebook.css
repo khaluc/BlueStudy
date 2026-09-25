@@ -1678,3 +1678,12 @@ dialog li {
 [hidden] {
   display: none !important;
 }
+
+/* Shared line icons for the four primary learning destinations. */
+.sidebar nav button { gap:12px; border-radius:10px; }
+.nav-icon { display:grid; place-items:center; width:32px; height:32px; flex:0 0 32px; border-radius:9px; color:#6d8075; background:#e5e9df; transition:background .15s,color .15s; }
+.nav-icon svg { width:20px; height:20px; }
+.sidebar nav button.active .nav-icon { color:#fffdf5; background:#365e50; }
+.sidebar nav button:hover .nav-icon { color:#244c3f; background:#d3decc; }
+.sidebar nav button:focus-visible { outline:2px solid #365e50; outline-offset:3px; }
+@media(max-width:600px) { .sidebar nav button { gap:7px; } .nav-icon { width:28px; height:28px; flex-basis:28px; } .nav-icon svg { width:18px; height:18px; } }

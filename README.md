@@ -1,6 +1,20 @@
 # BlueStudy
 
-Trợ lý học tập cho học sinh lớp 9 Việt Nam. Xây từng phase theo cấu trúc `apps/`, `packages/`, `infra/`, `docs/`, `data/`, `tests/` và `scripts/`.
+Nền tảng học tiếng Anh học thuật cho người học ở nhiều trình độ: đọc hiểu, từ vựng, ngữ pháp, viết, ghi chú và ôn tập theo tài liệu. Không giới hạn lớp 9 hoặc một chương trình học cụ thể. Cấu trúc `apps/`, `packages/`, `infra/`, `docs/`, `data/`, `tests/` và `scripts/`.
+
+## Current application
+
+- Home: `/app/#home` with English and Vietnamese interfaces.
+- Speaking: `/app/#speaking`, three-part practice, separate guided/independent modes, AssemblyAI live transcription, script highlighting and AI coaching.
+- Chat: `/app/#chat`, image understanding, study conversations and interactive quizzes.
+- Exams: `/app/#exams`, structured PDF exams and skill-based revision.
+- Learning map: `/app/#map`, recent results and evidence-based revision priorities.
+
+Copy `.env.example` to `.env` and provide your own credentials. Never commit `.env` or API keys. Start services with `docker compose up -d --build`.
+
+Speaking marks compare recognised text and timing; they are not acoustic pronunciation assessments. AI exam answers and coaching are provisional.
+
+The phase notes below document earlier versions; some older navigation and screenshots have since been replaced.
 
 ## Hiện trạng
 

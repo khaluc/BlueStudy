@@ -2,6 +2,7 @@
 
 // UI-only translations. Documents, answers and editable values stay unchanged.
 const UI_EN = Object.fromEntries(`
+Trang chủ|Home
 Bỏ qua điều hướng|Skip navigation
 BlueStudy — trang chủ|BlueStudy — home
 MỘT CUỐN VỞ. VẠN ĐIỀU HAY.|ONE NOTEBOOK. ENDLESS DISCOVERIES.
@@ -162,7 +163,7 @@ Hỏi bài, gửi ghi chú hoặc cùng chuẩn bị cho buổi học tiếp the
 ✦ Hỏi bài trực tiếp, đính kèm ảnh/PDF hoặc tạo tài liệu ôn tập từ ghi chú của bạn.|✦ Ask questions, attach images/PDFs or create study materials from your notes.
 Cuộc trò chuyện với BlueStudy|Conversation with BlueStudy
 Trạng thái xử lý|Processing status
-Trợ lý học tập dành cho học sinh Việt Nam|An AI study companion for Vietnamese students
+Nền tảng học tiếng Anh học thuật|An academic English learning platform
 Lịch sử trò chuyện|Chat history
 Cuộc trò chuyện mới|New conversation
 Cuộc trò chuyện hiện tại|Current conversation
@@ -278,7 +279,7 @@ Học tiếp →|Continue →
 Lật thêm vài trang|Explore more pages
 Có thể bạn cũng muốn biết|You might also like
 GHI CHÉP BÀI HỌC|LESSON NOTES
-Tiếng Anh 9|Grade 9 English
+Tiếng Anh học thuật|Academic English
 ◦ Từ tài liệu của bạn|◦ From your document
 Bài học|Lesson
 Hỏi BlueStudy|Ask BlueStudy
@@ -431,6 +432,22 @@ nguồn mẫu|sample source
 Mở góc học tập|Open study space
 Đọc và nối các ý tưởng|Read and connect ideas
 Cập nhật tác vụ đang chạy|Refresh running tasks
+Câu trả lời sai|Incorrect answers
+Câu bỏ trống|Unanswered
+Câu bỏ trống không được dùng để kết luận bạn yếu kỹ năng đó.|Unanswered questions are not evidence of a skill weakness.
+Đánh giá và lộ trình học tập|Assessment and study plan
+Mục tiêu tự kiểm tra|Self-check target
+Ôn lại câu:|Review questions:
+Tạo lại lộ trình|Regenerate study plan
+Tạo đánh giá và lộ trình|Generate assessment and study plan
+Đang chuyển nhận xét và lộ trình sang ngôn ngữ bạn chọn…|Translating the assessment and study plan into your selected language…
+Chưa chuyển được ngôn ngữ. Bấm thử lại.|Translation could not be completed. Please try again.
+Thử chuyển ngôn ngữ lại|Retry translation
+Đang chuyển câu trả lời sang ngôn ngữ bạn chọn…|Translating the reply into your selected language…
+Chưa dịch được tin nhắn. Bấm thử lại.|This reply could not be translated. Please try again.
+Thử dịch lại|Retry translation
+Tạo quiz trắc nghiệm để mình chọn đáp án về nội dung đang học.|Create a multiple-choice quiz about what I am studying.
+Đọc nội dung trong ảnh và giải thích giúp mình.|Read the content in this image and explain it to me.
 `.trim().split("\n").map(line => line.split("|")));
 
 let uiLanguage = "vi";
@@ -447,6 +464,7 @@ function t(text) {
   if (key.includes(" — ") && key.split(" — ").every(part => Object.hasOwn(UI_EN, part)))
     return key.split(" — ").map(part => UI_EN[part]).join(" — ");
   const patterns = [
+    [/^Ngày (\d+) · (\d+) phút$/, "Day $1 · $2 minutes"],
     [/^(\d+) câu · (\d+) câu đã phân loại$/, "$1 questions · $2 classified"],
     [/^01 · Trích xuất: (.+) câu$/, "01 · Extraction: $1 questions"],
     [/^02 · AI phân loại: (.+) câu$/, "02 · AI classification: $1 questions"],
@@ -516,6 +534,7 @@ function setUILanguage(language) {
     button.setAttribute("aria-pressed", String(button.dataset.language === uiLanguage));
   });
   translateUI();
+  window.dispatchEvent(new CustomEvent("ui-language-change", {detail:{language:uiLanguage}}));
 }
 document.querySelectorAll("[data-language]").forEach(button => {
   button.addEventListener("click", () => setUILanguage(button.dataset.language));

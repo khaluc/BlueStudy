@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import Literal, Annotated
 from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Query
-from pydantic import Field, field_validator, StrictInt
+from pydantic import Field, field_validator, StrictInt, computed_field
 from sqlalchemy import select
 from apps.api.dependencies import current_user, get_db
 from apps.api.routers.sessions import owned_session
@@ -20,6 +20,7 @@ class ThreadInput(Input):
 
 
 class MessageInput(Input):
+    response_language: Literal['vi', 'en'] = 'vi'
     action: Literal['auto','chat','quiz'] = 'auto'
     image_document_id: UUID | None = None
     message: str = Field(min_length=1,max_length=1500)
@@ -40,6 +41,7 @@ class ThreadOut(Output):
 
 
 class TurnOut(Output):
+    work_context:dict|None=Field(default=None,exclude=True)
     quiz: dict | None
     quiz_result: dict | None
     image_document_id: str | None
@@ -53,6 +55,22 @@ class TurnOut(Output):
     error_code: str | None
     created_at: datetime
     finished_at: datetime | None
+
+    @computed_field
+    @property
+    def translations(self)->dict:
+        localized={}
+        for language,item in (self.work_context or {}).get('translations',{}).items():
+            if item.get('version',0)<2:continue
+            quiz=item.get('quiz')
+            result=None
+            if self.quiz_result and quiz:
+                result={**self.quiz_result,'feedback':[
+                    {**row,'question':q['question'],'options':q['options'],'explanation':q['explanation']}
+                    for row,q in zip(self.quiz_result['feedback'],quiz['questions'],strict=True)]}
+            localized[language]={'answer':item['answer'],
+                'quiz':self.hide_answer_key(quiz),'quiz_result':result}
+        return localized
 
     @field_validator('quiz', mode='before')
     @classmethod
@@ -118,9 +136,10 @@ def send(thread_id:UUID,body:MessageInput,user=Depends(current_user),db=Depends(
     if thread.title=='Cuộc trò chuyện mới':thread.title=body.message[:100]
     turn=ChatTurn(thread_id=thread.id,source_session_id=None if body.image_document_id else thread.session_id,
                   message=body.message,image_document_id=str(body.image_document_id) if body.image_document_id else None,
-                  provenance={'input_kind':'image'} if body.image_document_id else None)
+                  provenance={'response_language':body.response_language,
+                              **({'input_kind':'image'} if body.image_document_id else {})})
     if wants_quiz(body.message, body.action):
-        turn.provenance = {**(turn.provenance or {}),'request_kind':'quiz','agent_trace':quiz_trace()}
+        turn.provenance = {**(turn.provenance or {}),'request_kind':'quiz','agent_trace':quiz_trace(body.response_language)}
     db.add(turn);db.commit();return turn
 
 
@@ -134,6 +153,27 @@ def turns(thread_id:UUID,user=Depends(current_user),db=Depends(get_db)):
 
 class QuizSubmission(Input):
     answers: list[Annotated[StrictInt, Field(ge=0,le=3)]] = Field(min_length=5,max_length=5)
+
+
+class TranslationRequest(Input):
+    response_language:Literal['vi','en']
+
+
+@router.post('/threads/{thread_id}/turns/{turn_id}/translation',response_model=TurnOut,status_code=202)
+def translate_saved_turn(thread_id:UUID,turn_id:UUID,body:TranslationRequest,user=Depends(current_user),db=Depends(get_db)):
+    owned_thread(db,thread_id,user.id)
+    turn=db.scalar(select(ChatTurn).where(ChatTurn.id==str(turn_id),ChatTurn.thread_id==str(thread_id)).with_for_update())
+    if not turn:raise HTTPException(404,'Không tìm thấy tin nhắn.')
+    if turn.status!='succeeded':raise HTTPException(409,'Tin nhắn chưa sẵn sàng.')
+    metadata=dict(turn.provenance or {})
+    if (metadata.get('response_language','vi')==body.response_language
+        or (turn.work_context or {}).get('translations',{}).get(body.response_language,{}).get('version',0)>=2
+        or metadata.get('translation_status')=='queued'):return turn
+    metadata.update(translation_status='queued',translation_language=body.response_language)
+    metadata.pop('translation_error',None)
+    turn.provenance=metadata
+    db.commit()
+    return turn
 
 
 @router.post('/threads/{thread_id}/turns/{turn_id}/quiz-submit')
