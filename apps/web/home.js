@@ -7,6 +7,7 @@ function homePage(){
   function render(){
     root.className='home-page';
     root.replaceChildren();
+    if(window.BLUESTUDY_STATIC)root.append(sourceEl('p',copy('Public preview · AI practice is not connected yet.','Bản giới thiệu · Chưa kết nối dịch vụ luyện tập AI.'),'home-preview-note'));
     document.querySelector('#breadcrumb').textContent=copy('Home','Trang chủ');
     document.querySelector('#mode-badge').textContent='BlueStudy';
     const hero=el('section',null,'home-hero');
@@ -60,6 +61,30 @@ function homePage(){
       sourceEl('p',copy('Choose a topic. Take a breath. Give it a try.','Chọn một chủ đề. Hít thở nhẹ. Bắt đầu thử nhé.')),
       button(copy('Start my practice →','Bắt đầu luyện tập →'),()=>show('speaking'),'primary'));
     root.append(end);
+  }
+  render();window.addEventListener('ui-language-change',render);
+  homeCleanup=()=>window.removeEventListener('ui-language-change',render);
+}
+
+function staticFeaturePage(view){
+  reset('','');setNav(view);
+  const copy=(en,vi)=>uiLanguage==='en'?en:vi;
+  function render(){
+    root.className='home-page';
+    const titles={speaking:['Speaking Studio','Luyện Speaking'],chat:['Chat AI','Chat AI'],
+      exams:['Exams & revision','Đề thi & ôn tập'],map:['Learning map','Lộ trình học'],profile:['Study profile','Hồ sơ học tập']};
+    const title=copy(...titles[view]);
+    document.querySelector('#breadcrumb').textContent=title;
+    document.querySelector('#mode-badge').textContent=copy('Preview','Bản giới thiệu');
+    const section=el('section',null,'home-hero');
+    section.append(sourceEl('p',copy('COMING ONLINE','ĐANG CHUẨN BỊ BẢN ONLINE'),'eyebrow'),
+      sourceEl('h1',title),
+      sourceEl('p',copy('The BlueStudy website is online. This feature needs the learning backend, which has not been deployed yet.',
+        'Website BlueStudy đã lên mạng. Tính năng này cần hệ thống xử lý học tập, hiện chưa được triển khai online.'),'home-intro'),
+      sourceEl('p',copy('Microphone recording, uploads and AI requests are unavailable in this preview.',
+        'Bản giới thiệu chưa hỗ trợ ghi âm, tải tài liệu hoặc gửi yêu cầu AI.'),'muted'),
+      button(copy('Back to home','Về trang chủ'),()=>show('home'),'primary'));
+    root.replaceChildren(section);
   }
   render();window.addEventListener('ui-language-change',render);
   homeCleanup=()=>window.removeEventListener('ui-language-change',render);

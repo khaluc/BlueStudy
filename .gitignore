@@ -18,3 +18,7 @@ pytest-cache-files-*/
 *.log
 *.wav
 *.webm
+.vercel/
+dist/
+
+.vercel

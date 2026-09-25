@@ -149,6 +149,11 @@ async function openLocalSession() {
   sessionStorage.removeItem("padayon-token");
 }
 async function startWorkspace() {
+  if (window.BLUESTUDY_STATIC) {
+    token = "";
+    sessionStorage.removeItem("padayon-token");
+    return show(location.hash.slice(1) || "home");
+  }
   await openLocalSession();
   if (location.hash.startsWith("#exam=")) return examView(location.hash.slice(6));
   if (location.hash === "#exams") return show("exams");
@@ -160,6 +165,11 @@ async function login(afterView = "library") {
   await show(afterView);
 }
 async function show(view) {
+  if (window.BLUESTUDY_STATIC) {
+    const destination=["home","speaking","chat","exams","map","profile"].includes(view)?view:"home";
+    window.history.replaceState(null,"","#"+destination);
+    return destination==="home"?homePage():staticFeaturePage(destination);
+  }
   if (["roadmap", "library", "progress"].includes(view)) view = "map";
   window.history.replaceState(null, "", view === "chat" ? "#chat" : location.pathname);
   setNav(view);

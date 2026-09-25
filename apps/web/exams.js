@@ -7,6 +7,10 @@ function disposeExam() {
   examLanguageCleanup = () => {};
 }
 window.addEventListener("hashchange", () => {
+  if (window.BLUESTUDY_STATIC) {
+    show(location.hash.slice(1)||"home").catch(error=>notice.textContent=error.message);
+    return;
+  }
   if (!token) return;
   let navigation;
   if (location.hash.startsWith("#exam=")) navigation = examView(location.hash.slice(6));
